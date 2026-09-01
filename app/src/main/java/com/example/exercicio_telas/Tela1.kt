@@ -119,10 +119,9 @@ fun CartScreen() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Lock, // Ou Icons.Default.Star, Icons.Default.Favorite, etc.
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
                     contentDescription = "Logo",
-                    tint = goldAccent,
                     modifier = Modifier.size(44.dp)
                 )
                 Box(
