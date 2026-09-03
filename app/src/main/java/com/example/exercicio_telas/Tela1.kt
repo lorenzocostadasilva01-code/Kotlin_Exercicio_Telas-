@@ -54,7 +54,7 @@ data class CartItem(
 )
 @Preview
 @Composable
-fun CartScreen() {
+fun CartScreen(onBackToMenu: () -> Unit = {}) {
     val backgroundColor = Color(0xFFFFFFE4)
     val cardBackgroundColor = Color(0xFFECECE3)
     val badgeBackgroundColor = Color(0xFFE2E2D6)
@@ -83,7 +83,7 @@ fun CartScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = {},
+                        onClick = onBackToMenu,
                         modifier = Modifier.background(goldAccent, CircleShape)
                     ) {
                         Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
