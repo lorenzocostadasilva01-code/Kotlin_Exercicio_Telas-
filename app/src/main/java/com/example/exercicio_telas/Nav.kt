@@ -4,19 +4,26 @@ import androidx.compose.runtime.*
 
 @Composable
 fun AppNavigator() {
-    // ATENÇÃO AQUI: Mudamos de 'val' para 'var'
-    var currentScreen by remember { mutableStateOf("tela_carrinho") }
+    // Estado inicial é o menu
+    var currentScreen by remember { mutableStateOf("pagamento") }
 
     when (currentScreen) {
-        "tela_menu" -> {
+        "menu" -> {
             RestaurantMenuScreen(
-                onNavigateToCart = { currentScreen = "tela_carrinho" },
-                onNavigateToSearch = { /* Lógica de busca futura */ }
+                onNavigateToCart = { currentScreen = "carrinho" },
+                onNavigateToSearch = { /* Futuro */ }
             )
         }
-        "tela_carrinho" -> {
+        "carrinho" -> {
             CartScreen(
-                onBackToMenu = { currentScreen = "tela_menu" }
+                onBackToMenu = { currentScreen = "menu" },
+                onNavigateToPayment = { currentScreen = "pagamento" } // Vai para a tela 3
+            )
+        }
+        "pagamento" -> {
+            PaymentScreen(
+                onNavigateToMenu = { currentScreen = "menu" },
+                onNavigateToCart = { currentScreen = "carrinho" }
             )
         }
     }

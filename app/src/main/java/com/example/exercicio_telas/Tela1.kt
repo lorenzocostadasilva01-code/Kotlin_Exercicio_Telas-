@@ -1,9 +1,5 @@
 package com.example.exercicio_telas
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,7 +9,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -30,31 +25,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
-        setContent {
-            MaterialTheme {
-                Surface {
-                    CartScreen()
-                }
-            }
-        }
-    }
-}
-
-// Modelo de Dados apenas para renderização visual
 data class CartItem(
     val title: String,
     val quantity: Int,
     val price: String,
     val imageRes: Int
 )
-@Preview
+
 @Composable
-fun CartScreen(onBackToMenu: () -> Unit = {}) {
+fun CartScreen(
+    onBackToMenu: () -> Unit = {},
+    onNavigateToPayment: () -> Unit = {}
+) {
     val backgroundColor = Color(0xFFFFFFE4)
     val cardBackgroundColor = Color(0xFFECECE3)
     val badgeBackgroundColor = Color(0xFFE2E2D6)
@@ -113,7 +95,6 @@ fun CartScreen(onBackToMenu: () -> Unit = {}) {
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header Top Bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -136,7 +117,6 @@ fun CartScreen(onBackToMenu: () -> Unit = {}) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Lista de Itens do Carrinho
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.weight(1f)
@@ -148,7 +128,6 @@ fun CartScreen(onBackToMenu: () -> Unit = {}) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Total
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -166,9 +145,10 @@ fun CartScreen(onBackToMenu: () -> Unit = {}) {
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-// Botão Concluir Pagamento
+
             Button(
-                onClick = {},
+                // AQUI OCORRE A NAVEGAÇÃO PARA PAGAMENTO
+                onClick = onNavigateToPayment,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -185,6 +165,7 @@ fun CartScreen(onBackToMenu: () -> Unit = {}) {
         }
     }
 }
+
 @Composable
 fun CartItemCard(item: CartItem, cardBg: Color, badgeBg: Color) {
     Row(
@@ -195,7 +176,6 @@ fun CartItemCard(item: CartItem, cardBg: Color, badgeBg: Color) {
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-// Imagem do Produto
         Image(
             painter = painterResource(id = item.imageRes),
             contentDescription = item.title,
@@ -211,20 +191,13 @@ fun CartItemCard(item: CartItem, cardBg: Color, badgeBg: Color) {
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = item.title,
-                fontSize = 18.sp,
-                color = Color(0xFF5A5A5A)
-            )
-
+            Text(text = item.title, fontSize = 18.sp, color = Color(0xFF5A5A5A))
             Spacer(modifier = Modifier.height(10.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Bloco Quantidade
                 Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
@@ -235,8 +208,6 @@ fun CartItemCard(item: CartItem, cardBg: Color, badgeBg: Color) {
                     Text(text = "QTDA", fontSize = 10.sp, color = Color.Gray)
                     Text(text = "${item.quantity}", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
-
-                // Bloco Preço
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
@@ -244,12 +215,7 @@ fun CartItemCard(item: CartItem, cardBg: Color, badgeBg: Color) {
                         .padding(horizontal = 18.dp, vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = item.price,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4A4A4A)
-                    )
+                    Text(text = item.price, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4A4A4A))
                 }
             }
         }
