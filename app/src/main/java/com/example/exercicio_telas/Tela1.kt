@@ -2,18 +2,20 @@ package com.example.exercicio_telas
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,18 +26,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.exercicio_telas.R
+import java.util.Locale
 
 data class CartItem(
+    val id: Int,
     val title: String,
     val quantity: Int,
-    val price: String,
+    val unitPrice: Double,
     val imageRes: Int
-)
+) {
+    val totalPrice: Double
+        get() = quantity * unitPrice
+}
 
 @Composable
 fun CartScreen(
     onBackToMenu: () -> Unit = {},
-    onNavigateToPayment: () -> Unit = {}
+    onNavigateToPayment: (String) -> Unit = {}
 ) {
     val backgroundColor = Color(0xFFFFFFE4)
     val cardBackgroundColor = Color(0xFFECECE3)
@@ -43,11 +51,17 @@ fun CartScreen(
     val goldAccent = Color(0xFFD4AF37)
     val bottomNavBg = Color(0xFF333333)
 
-    val items = listOf(
-        CartItem("Minestrone", 2, "240,00", R.drawable.imagem1),
-        CartItem("Rigatoni", 3, "174,00", R.drawable.imagem2),
-        CartItem("RAR Pinot noir", 1, "80,00", R.drawable.imagem3)
-    )
+    // Lista de itens reativa
+    val items = remember {
+        mutableStateListOf(
+            CartItem(1, "Minestrone", 2, 120.00, R.drawable.imagem1),
+            CartItem(2, "Rigatoni", 3, 58.00, R.drawable.imagem2),
+            CartItem(3, "RAR Pinot noir", 1, 80.00, R.drawable.imagem3)
+        )
+    }
+
+    val totalCartPrice = items.sumOf { it.totalPrice }
+    val formattedTotal = String.format(Locale("pt", "BR"), "R$ %.2f", totalCartPrice)
 
     Scaffold(
         contentWindowInsets = WindowInsets.navigationBars,
@@ -121,13 +135,30 @@ fun CartScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                items(items) { item ->
-                    CartItemCard(item, cardBackgroundColor, badgeBackgroundColor)
+                items(items, key = { it.id }) { item ->
+                    CartItemCard(
+                        item = item,
+                        cardBg = cardBackgroundColor,
+                        badgeBg = badgeBackgroundColor,
+                        onIncrease = {
+                            val index = items.indexOf(item)
+                            if (index != -1) {
+                                items[index] = item.copy(quantity = item.quantity + 1)
+                            }
+                        },
+                        onDecrease = {
+                            val index = items.indexOf(item)
+                            if (index != -1 && item.quantity > 1) {
+                                items[index] = item.copy(quantity = item.quantity - 1)
+                            }
+                        }
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Total do Carrinho
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -137,7 +168,7 @@ fun CartScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Total: 494,00",
+                    text = "Total: $formattedTotal",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF4A4A4A)
@@ -147,8 +178,7 @@ fun CartScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                // AQUI OCORRE A NAVEGAÇÃO PARA PAGAMENTO
-                onClick = onNavigateToPayment,
+                onClick = { onNavigateToPayment(formattedTotal) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -167,7 +197,13 @@ fun CartScreen(
 }
 
 @Composable
-fun CartItemCard(item: CartItem, cardBg: Color, badgeBg: Color) {
+fun CartItemCard(
+    item: CartItem,
+    cardBg: Color,
+    badgeBg: Color,
+    onIncrease: () -> Unit,
+    onDecrease: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -193,31 +229,76 @@ fun CartItemCard(item: CartItem, cardBg: Color, badgeBg: Color) {
         ) {
             Text(text = item.title, fontSize = 18.sp, color = Color(0xFF5A5A5A))
             Spacer(modifier = Modifier.height(10.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
+                // Seletor de Quantidade
+                Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
                         .background(badgeBg)
-                        .padding(horizontal = 14.dp, vertical = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(text = "QTDA", fontSize = 10.sp, color = Color.Gray)
-                    Text(text = "${item.quantity}", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "-",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.DarkGray,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable { onDecrease() }
+                            .padding(horizontal = 6.dp)
+                    )
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "QTDA", fontSize = 9.sp, color = Color.Gray)
+                        Text(
+                            text = "${item.quantity}",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Aumentar",
+                        tint = Color.DarkGray,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .clip(CircleShape)
+                            .clickable { onIncrease() }
+                    )
                 }
+
+                // Preço Total do Item
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
                         .background(badgeBg)
-                        .padding(horizontal = 18.dp, vertical = 12.dp),
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = item.price, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4A4A4A))
+                    Text(
+                        text = String.format(Locale("pt", "BR"), "%.2f", item.totalPrice),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4A4A4A)
+                    )
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun CartScreenPreview() {
+    MaterialTheme {
+        CartScreen()
     }
 }
