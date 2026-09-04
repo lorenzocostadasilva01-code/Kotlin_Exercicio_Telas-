@@ -5,7 +5,7 @@ import androidx.compose.runtime.*
 @Composable
 fun AppNavigator() {
     // Guarda a tela atual (iniciando em "pagamento" ou "menu")
-    var currentScreen by remember { mutableStateOf("pagamento") }
+    var currentScreen by remember { mutableStateOf("menu") }
 
     // Guarda o valor total do carrinho para passar para a tela de pagamento
     var totalAmount by remember { mutableStateOf("R$ 0,00") }
